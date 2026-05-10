@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .video-background video {
+            position: absolute;
+            top: 120%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+
+
+        .side-image-right, .side-info-box {
+            position: fixed;
+            top: 50%;
+            width: 200px;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .side-image-left {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 400px;
+            z-index: 1;
+        }
+
+        .side-image-right {
+            right: 500px;
+        }
+
+        .side-info-box {
+            right: 20px;
+            width: 450px;
+            height: 90vh;
+            display: block;
+        }
+
+        .side-image-left img, .side-image-right img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .side-image-right .video2 {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+
+        .side-image-left .audio-player {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+
+        .song-image-side {
+            width: 400px;
+            height: 400px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            object-fit: cover;
+        }
+
+        .side-image-left audio {
+            width: 250px;
+            height: 50px;
+        }
+
+
+        .info-box {
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            backdrop-filter: none;
+            height: 100%;
+            display: block;
+        }
+
+        .info-box h3 {
+            color: white;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .info-content {
+            width: 100%;
+            height: calc(90vh - 60px);
+            overflow: visible;
+            font-family: monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            color: white;
+            background: transparent;
+            padding: 10px;
+            border-radius: 0;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        
+        .info-entry {
+            margin-bottom: 8px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            border-left: none;
+        }
+
+        
+
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .blur-overlay h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .blur-overlay p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .blur-overlay .click-hint {
+            font-size: 1em;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+
+        .content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .song-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+            object-fit: cover;
+        }
+
+
+        .audio-player {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .audio-player h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        audio {
+            width: 300px;
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            .side-image-left {
+                width: 100px;
+            }
+            
+            .side-info-box {
+                width: 180px;
+                right: 10px;
+            }
+            
+            .song-image {
+                width: 200px;
+                height: 200px;
+            }
+            
+            audio {
+                width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let sessionStart = new Date();
+
+        async function getIPInfo() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                try {
+                    const response = await fetch('https://ipinfo.io/json');
+                    const data = await response.json();
+                    return data.ip;
+                } catch (error2) {
+                    return 'Unable to detect IP';
+                }
+            }
+        }
+        
+
+        async function getDetailedIPInfo() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                return {
+                    ip: data.ip,
+                    city: data.city,
+                    region: data.region,
+                    country: data.country_name,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    timezone: data.timezone,
+                    isp: data.org,
+                    postal: data.postal
+                };
+            } catch (error) {
+                try {
+                    const response = await fetch('https://ipinfo.io/json');
+                    const data = await response.json();
+                    return {
+                        ip: data.ip,
+                        city: data.city,
+                        region: data.region,
+                        country: data.country,
+                        latitude: parseFloat(data.loc.split(',')[0]),
+                        longitude: parseFloat(data.loc.split(',')[1]),
+                        timezone: data.timezone,
+                        isp: data.org,
+                        postal: data.postal
+                    };
+                } catch (error2) {
+                    return { ip: 'Unable to detect IP' };
+                }
+            }
+        }
+        
+
+        function getClientInfo() {
+            return {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                languages: navigator.languages.join(', '),
+                platform: navigator.platform,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                colorDepth: screen.colorDepth,
+                pixelDepth: screen.pixelDepth,
+                availWidth: screen.availWidth,
+                availHeight: screen.availHeight,
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                documentWidth: document.documentElement.scrollWidth,
+                documentHeight: document.documentElement.scrollHeight,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                referrer: document.referrer || 'Direct',
+                currentUrl: window.location.href,
+                timestamp: new Date().toISOString(),
+                sessionDuration: Math.floor((new Date() - sessionStart) / 1000),
+                connection: navigator.connection ? {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt
+                } : 'Not available',
+                hardware: {
+                    cores: navigator.hardwareConcurrency || 'Unknown',
+                    memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'Unknown',
+                    maxTouchPoints: navigator.maxTouchPoints
+                },
+                battery: 'Checking...',
+                geolocation: 'Checking...'
+            };
+        }
+        
+        async function getBatteryInfo() {
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    return {
+                        level: Math.round(battery.level * 100) + '%',
+                        charging: battery.charging ? 'Yes' : 'No',
+                        chargingTime: battery.chargingTime === Infinity ? 'Unknown' : Math.round(battery.chargingTime / 60) + ' min',
+                        dischargingTime: battery.dischargingTime === Infinity ? 'Unknown' : Math.round(battery.dischargingTime / 60) + ' min'
+                    };
+                } catch (error) {
+                    return 'Not available';
+                }
+            }
+            return 'Not supported';
+        }
+        
+        function getGeolocation() {
+            return new Promise((resolve) => {
+                if ('geolocation' in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            resolve({
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                accuracy: Math.round(position.coords.accuracy) + 'm'
+                            });
+                        },
+                        (error) => {
+                            resolve('Denied or unavailable');
+                        }
+                    );
+                } else {
+                    resolve('Not supported');
+                }
+            });
+        }
+        
+        function addInfoEntry(text) {
+            const infoContent = document.getElementById('clickInfo');
+            const entry = document.createElement('div');
+            entry.className = 'info-entry';
+            entry.textContent = text;
+            
+            infoContent.appendChild(entry);
+            infoContent.scrollTop = infoContent.scrollHeight;
+        }
+        
+        function clearInfo() {
+            const infoContent = document.getElementById('clickInfo');
+            infoContent.innerHTML = '';
+            sessionStart = new Date();
+            captureAllInfo();
+        }
+        
+        async function captureAllInfo() {
+
+            const clientInfo = getClientInfo();
+            addInfoEntry(`User Agent: ${clientInfo.userAgent}`);
+            addInfoEntry(`Platform: ${clientInfo.platform}`);
+            addInfoEntry(`Language: ${clientInfo.language}`);
+            addInfoEntry(`Languages: ${clientInfo.languages}`);
+            addInfoEntry(`Timezone: ${clientInfo.timezone}`);
+            addInfoEntry(`Cookies: ${clientInfo.cookieEnabled ? 'Enabled' : 'Disabled'}`);
+            addInfoEntry(`Online: ${clientInfo.onLine ? 'Yes' : 'No'}`);
+            
+            addInfoEntry(`Screen: ${clientInfo.screenWidth}x${clientInfo.screenHeight}`);
+            addInfoEntry(`Available Screen: ${clientInfo.availWidth}x${clientInfo.availHeight}`);
+            addInfoEntry(`Color Depth: ${clientInfo.colorDepth} bit`);
+            addInfoEntry(`Window: ${clientInfo.windowWidth}x${clientInfo.windowHeight}`);
+            addInfoEntry(`CPU Cores: ${clientInfo.hardware.cores}`);
+            addInfoEntry(`Memory: ${clientInfo.hardware.memory}`);
+            addInfoEntry(`Touch Points: ${clientInfo.hardware.maxTouchPoints}`);
+            
+
+            if (clientInfo.connection !== 'Not available') {
+                addInfoEntry(`Connection: ${clientInfo.connection.effectiveType}`);
+                addInfoEntry(`Downlink: ${clientInfo.connection.downlink} Mbps`);
+                addInfoEntry(`RTT: ${clientInfo.connection.rtt} ms`);
+            }
+            
+            addInfoEntry('Detecting IP address...');
+            const ipInfo = await getDetailedIPInfo();
+            addInfoEntry(`IP Address: ${ipInfo.ip}`);
+            if (ipInfo.city) {
+                addInfoEntry(`Location: ${ipInfo.city}, ${ipInfo.region}, ${ipInfo.country}`);
+                addInfoEntry(`Coordinates: ${ipInfo.latitude}, ${ipInfo.longitude}`);
+                addInfoEntry(`Postal: ${ipInfo.postal}`);
+                addInfoEntry(`ISP: ${ipInfo.isp}`);
+            }
+            
+            const batteryInfo = await getBatteryInfo();
+            if (typeof batteryInfo === 'object') {
+                addInfoEntry(`Level: ${batteryInfo.level}`);
+                addInfoEntry(`Charging: ${batteryInfo.charging}`);
+                addInfoEntry(`Charging Time: ${batteryInfo.chargingTime}`);
+                addInfoEntry(`Discharging Time: ${batteryInfo.dischargingTime}`);
+            } else {
+                addInfoEntry(batteryInfo);
+            }
+            
+                        
+            addInfoEntry(`Start Time: ${clientInfo.timestamp}`);
+            addInfoEntry(`Referrer: ${clientInfo.referrer}`);
+            addInfoEntry(`Current URL: ${clientInfo.currentUrl}`);
+        }
+        
+        window.addEventListener('load', function() {
+            const audio = document.querySelector('audio');
+            if (audio) {
+                audio.volume = 0.3;
+            }
+            captureAllInfo();
+        });
+    </script>
+
+    <div class="blur-overlay" id="blurOverlay" onclick="this.style.display='none'; document.querySelector('audio').play();">
+        <h2>click to unblur</h2>
+        <div class="click-hint">Click to continue...</div>
+    </div>
+
+
+    <div class="video-background">
+        <video autoplay muted loop>
+            <source src="https://raw.githubusercontent.com/Quirkz5633/p/main/video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+
+    <div class="side-image-left">
+        <img src="image.png" alt="Left decoration">
+        <div class="audio-player">
+            <audio controls volume="0.3" loop>
+                <source src="https://raw.githubusercontent.com/Quirkz5633/p/main/song.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        <img src="image3.webp" alt="Song cover" class="song-image-side">
+    </div>
+
+
+    <div class="side-image-right">
+        <img src="image2.png" alt="Right decoration">
+        <video class="video2" autoplay muted loop>
+            <source src="https://raw.githubusercontent.com/Quirkz5633/p/main/video2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+
+    <div class="side-info-box">
+        <div class="info-box">
+            <h3>nice opsec</h3>
+            <div class="info-content" id="clickInfo">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="content">
+        
+    </body>
+</html>
